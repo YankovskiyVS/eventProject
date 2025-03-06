@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    auth-middleware:
+      forwardAuth:
+        address: "http://auth-server:8080/signin"
+        trustForwardHeader: true
