@@ -11,5 +11,5 @@ providers:
     exposedByDefault: false
 
   file:
-    filename: "~/github/eventProject/auth/traefik/dynamic/auth-middleware.yml"
+    filename: "etc/traefik/dynamic/auth-middleware.yml"
     watch: true
