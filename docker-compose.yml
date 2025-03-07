@@ -6,42 +6,35 @@ services:
     container_name: traefik
     ports:
       - "80:80"
-      - "8081:8080" # Traefik dashboard
+      - "8081:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik/dynamic:/etc/traefik/dynamic
-    command: --api.insecure=true --providers.docker
+      - ./traefik/traefik.yml:/auth/traefik/traefik.yml
+      - ./traefik/dynamic:/auth/traefik/dynamic
+    command: --api.insecure=true --providers.docker --log.level=DEBUG
 
   auth-server:
     build: ./auth
     container_name: auth-server
+    ports:
+      - "8080:8080" 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.auth-server.rule=Host(`auth.example.com`)"
+      - "traefik.http.routers.auth-server.rule=Host(`localhost`)"
       - "traefik.http.routers.auth-server.entrypoints=web"
       - "traefik.http.routers.auth-server.middlewares=auth-middleware"
+      - "traefik.http.services.auth-server.loadbalancer.server.port=8080"
     depends_on:
-      - mongoDB
+      - mongo
 
-  mongoDB:
+  mongo:
     image: mongo:4.0
     hostname: mongo.local
     restart: always
     ports:
       - "27017:27017"
-    labels:
-      - "traefik.tcp.routers.mongo.rule=HostSNI(`mongo.local`)"
-      - "traefik.tcp.routers.mongo.tls.passthrough=true"
-      - "traefik.tcp.routers.mongo.entrypoints=mongo"
-      - "traefik.enable=true"
-      - "traefik.http.routers.auth-server.rule=Host(`auth.com`)"
-      - "traefik.http.routers.auth-server.entrypoints=web"
-      - "traefik.http.routers.auth-server.middlewares=auth-middleware"
     command:
       - "mongod"
-      - "--sslMode=requireSSL"
-      - "--sslPEMKeyFile=/certs/mongo.pem"
     volumes:
       - mongo-data:/data/db
 

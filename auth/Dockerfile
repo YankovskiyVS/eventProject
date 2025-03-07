@@ -1,13 +1,19 @@
-FROM golang:1.19-alpine
+FROM golang:alpine AS builder
 
-WORKDIR /github/eventProject/auth
+WORKDIR /build/auth
+
+ADD go.mod .
 
 COPY . .
 
-RUN go mod download
+RUN go build -o main main.go handlers.go user.go
 
-RUN go build -o main .
+FROM alpine
 
-EXPOSE 8080
+WORKDIR /build/auth
 
-CMD ["./main"]
+COPY --from=builder /build/auth /build/auth
+
+EXPOSE 8081
+
+CMD ["/build/auth/main"]
