@@ -1,4 +1,4 @@
-package main
+package authmongodb
 
 type User struct {
 	Username string `json:"username" bson:"username"`

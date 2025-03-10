@@ -1,24 +1,24 @@
-package handlers
+package authhandlers
 
 import (
 	"errors"
 	"net/http"
 
-	"github.com/YankovskiyVS/eventProject/auth/authhttp"
+	"github.com/YankovskiyVS/eventProject/auth/main"
 )
 
-func (s *authhttp.APIServer) handleAuth(w http.ResponseWriter, r *http.Request) error {
+func (s *HandleAPIServer) handleAuth(w http.ResponseWriter, r *http.Request) error {
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
 		return errors.New("missing authorization header")
 	}
 
-	claims, err := authjwt.validateJWT(tokenString)
+	claims, err := main.ValidateJWT(tokenString)
 	if err != nil {
 		return errors.New("invalid token")
 	}
 
-	return authhttp.writeJSON(w, http.StatusOK, map[string]string{
+	return main.WriteJSON(w, http.StatusOK, map[string]string{
 		"username": claims.Username,
 		"role":     claims.Role,
 	})
