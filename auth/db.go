@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,7 +17,15 @@ func init() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	//scan .env file
+	err_env := godotenv.Load()
+	if err_env != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	db_port := os.Getenv("API_PORT")
+
+	clientOptions := options.Client().ApplyURI(db_port)
 	var err error
 	client, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {
