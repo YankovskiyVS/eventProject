@@ -6,7 +6,7 @@ ADD go.mod .
 
 COPY . .
 
-RUN go build -o main main.go handlers.go user.go
+RUN go build -o main main.go handle_auth.go handle_signin.go handle_signup.go http.go jwt.go db.go middlewares.go user.go
 
 FROM alpine
 

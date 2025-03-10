@@ -1,4 +1,4 @@
-package authhandlers
+package main
 
 import (
 	"context"
@@ -7,21 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/YankovskiyVS/eventProject/auth/authmongodb"
-	"github.com/YankovskiyVS/eventProject/auth/main"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type HandleAPIServer struct {
-	main.APIServer
-}
-
-var client *mongo.Client
-
-func (s *HandleAPIServer) handleSignUp(w http.ResponseWriter, r *http.Request) error {
-	var user authmongodb.User
+func (s *APIServer) handleSignUp(w http.ResponseWriter, r *http.Request) error {
+	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		return errors.New("invalid request body")
 	}
@@ -42,7 +33,7 @@ func (s *HandleAPIServer) handleSignUp(w http.ResponseWriter, r *http.Request) e
 	defer cancel()
 
 	// Check for existing user
-	var existingUser authmongodb.User
+	var existingUser User
 	err = collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&existingUser)
 	if err == nil {
 		return errors.New("username already exists")
@@ -53,5 +44,5 @@ func (s *HandleAPIServer) handleSignUp(w http.ResponseWriter, r *http.Request) e
 		return errors.New("failed to create user")
 	}
 
-	return main.WriteJSON(w, http.StatusCreated, map[string]string{"message": "User created successfully"})
+	return WriteJSON(w, http.StatusCreated, map[string]string{"message": "User created successfully"})
 }

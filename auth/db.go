@@ -1,4 +1,4 @@
-package authmongodb
+package main
 
 import (
 	"context"

@@ -33,9 +33,9 @@ type AuthResponse struct {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/signup", makeHTTPHandleFunc(s.authhandlers.handleSignUp)).Methods("POST")
-	router.HandleFunc("/signin", makeHTTPHandleFunc(s.authhandlers.handleSignIn)).Methods("POST")
-	router.HandleFunc("/auth", makeHTTPHandleFunc(authhandlers.handleAuth)).Methods("POST")
+	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignUp)).Methods("POST")
+	router.HandleFunc("/signin", makeHTTPHandleFunc(s.handleSignIn)).Methods("POST")
+	router.HandleFunc("/auth", makeHTTPHandleFunc(s.handleAuth)).Methods("POST")
 
 	router.Use(LoggingMiddleware)
 	router.Use(ContentTypeMiddleware)

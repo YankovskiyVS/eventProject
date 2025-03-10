@@ -1,4 +1,4 @@
-package authhandlers
+package main
 
 import (
 	"context"
@@ -7,15 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/YankovskiyVS/eventProject/auth/authmongodb"
-	"github.com/YankovskiyVS/eventProject/auth/main"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *HandleAPIServer) handleSignIn(w http.ResponseWriter, r *http.Request) error {
-	var req main.AuthRequest
+func (s *APIServer) handleSignIn(w http.ResponseWriter, r *http.Request) error {
+	var req AuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errors.New("invalid request body")
 	}
@@ -24,7 +22,7 @@ func (s *HandleAPIServer) handleSignIn(w http.ResponseWriter, r *http.Request) e
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var user authmongodb.User
+	var user User
 	err := collection.FindOne(ctx, bson.M{"username": req.Username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -37,12 +35,12 @@ func (s *HandleAPIServer) handleSignIn(w http.ResponseWriter, r *http.Request) e
 		return errors.New("invalid credentials")
 	}
 
-	token, err := main.GenerateJWT(user.Username, user.Role)
+	token, err := GenerateJWT(user.Username, user.Role)
 	if err != nil {
 		return errors.New("failed to generate token")
 	}
 
-	return main.WriteJSON(w, http.StatusOK, main.AuthResponse{
+	return WriteJSON(w, http.StatusOK, AuthResponse{
 		Token: token,
 		Role:  user.Role,
 	})
