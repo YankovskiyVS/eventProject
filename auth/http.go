@@ -16,10 +16,6 @@ type APIError struct {
 	Error string `json:"error"`
 }
 
-func NewAPIServer(addr string) *APIServer {
-	return &APIServer{listenAddr: addr}
-}
-
 type AuthRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -30,15 +26,16 @@ type AuthResponse struct {
 	Role  string `json:"role"`
 }
 
+func NewAPIServer(addr string) *APIServer {
+	return &APIServer{listenAddr: addr}
+}
+
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignUp)).Methods("POST")
 	router.HandleFunc("/signin", makeHTTPHandleFunc(s.handleSignIn)).Methods("POST")
 	router.HandleFunc("/auth", makeHTTPHandleFunc(s.handleAuth)).Methods("POST")
-
-	router.Use(LoggingMiddleware)
-	router.Use(ContentTypeMiddleware)
 
 	log.Printf("Server running on %s", s.listenAddr)
 	log.Fatal(http.ListenAndServe(s.listenAddr, router))

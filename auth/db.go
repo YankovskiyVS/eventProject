@@ -23,7 +23,7 @@ func init() {
 		log.Fatal("Error loading .env file")
 	}
 
-	db_port := os.Getenv("API_PORT")
+	db_port := os.Getenv("DB_PORT")
 
 	clientOptions := options.Client().ApplyURI(db_port)
 	var err error
