@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 type Event struct {
@@ -19,7 +21,7 @@ type Event struct {
 
 var db *sql.DB
 
-func init() {
+func initDB() {
 	var err error
 
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -35,7 +37,7 @@ func init() {
 					id SERIAL PRIMARY KEY,
 					name VARCHAR(65),
 					description TEXT,
-					event_date DATETIME,
+					event_date DATE,
 					available_tickets INT,
 					ticket_price INT)`)
 	if err != nil {

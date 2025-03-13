@@ -16,24 +16,14 @@ type APIError struct {
 	Error string `json:"error"`
 }
 
-type AuthRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type AuthResponse struct {
-	Token string `json:"token"`
-	Role  string `json:"role"`
-}
-
-func NewAPIServer(addr string) *APIServer {
+func EventAPIServer(addr string) *APIServer {
 	return &APIServer{listenAddr: addr}
 }
 
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/events/", makeHTTPHandleFunc(s.handleCreateEvent)).Methods("POST")
+	router.HandleFunc("/events", makeHTTPHandleFunc(s.handleCreateEvent)).Methods("POST")
 	router.HandleFunc("/events/id", makeHTTPHandleFunc(s.handleUpdateEvent)).Methods("PUT")
 	router.HandleFunc("/events/id", makeHTTPHandleFunc(s.handleDeleteEvent)).Methods("DELETE")
 

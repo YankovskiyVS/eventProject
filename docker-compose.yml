@@ -9,23 +9,51 @@ services:
       - "8081:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik/traefik.yml:/auth/traefik/traefik.yml
-      - ./traefik/dynamic:/auth/traefik/dynamic
-    command: --api.insecure=true --providers.docker --log.level=DEBUG
+    command: 
+      --api.insecure=true 
+      --providers.docker 
+      --log.level=DEBUG 
 
   auth-server:
     build: ./auth
     container_name: auth-server
     ports:
-      - "8080:8080" 
+      - "8000:8000"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.auth-server.rule=Host(`localhost`)"
-      - "traefik.http.routers.auth-server.entrypoints=web"
-      - "traefik.http.routers.auth-server.middlewares=auth-middleware"
-      - "traefik.http.services.auth-server.loadbalancer.server.port=8080"
+       - "traefik.enable=true"
+       - "traefik.http.routers.auth.rule=Host(`localhost`)"
+       - "traefik.http.services.auth.loadbalancer.server.port=8000"
     depends_on:
       - mongo
+
+  event-server:
+    build: ./events
+    container_name: events-server
+    ports:
+      - "8888:8888"
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=event_table
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.event-server.rule=Host(`localhost`)"
+      - "traefik.http.services.event-server.loadbalancer.server.port=8888"
+    depends_on:
+      - postgres
+
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres.local
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=event_table
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 
   mongo:
     image: mongo:4.0
@@ -40,3 +68,4 @@ services:
 
 volumes:
   mongo-data:
+  postgres-data:

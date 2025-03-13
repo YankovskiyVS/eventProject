@@ -14,6 +14,6 @@ WORKDIR /build/auth
 
 COPY --from=builder /build/auth /build/auth
 
-EXPOSE 8081
+EXPOSE 8000
 
 CMD ["/build/auth/main"]

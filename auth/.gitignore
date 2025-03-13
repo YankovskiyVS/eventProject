@@ -1,1 +1,2 @@
-auth/bin/eventProject
+bin/eventProject
+.env

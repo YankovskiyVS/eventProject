@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	initDB()
 	//scan .env file
 	err := godotenv.Load()
 	if err != nil {
@@ -17,6 +18,6 @@ func main() {
 	port := os.Getenv("API_PORT")
 
 	//Start and run the server
-	server := NewAPIServer(port)
+	server := EventAPIServer(port)
 	server.Run()
 }

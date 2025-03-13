@@ -50,7 +50,7 @@ func makeHTTPHandleFunc(f func(http.ResponseWriter, *http.Request) error) http.H
 }
 
 func WriteJSON(w http.ResponseWriter, status int, v interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
 }
