@@ -13,6 +13,8 @@ type PostgresEvent struct {
 	db *sql.DB
 }
 
+// Make an interface that has all methods for the microservice
+// This intrfce is declared in the APIServer (http.go file)
 type EventDB interface {
 	CreateEvent(*Event) error
 	DeleteEvent(uint) error
@@ -20,6 +22,7 @@ type EventDB interface {
 }
 
 func NewPostgresEvent() *PostgresEvent {
+	//Getting all required info from docker compose file
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGUSER"),
 		os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE"))
@@ -45,7 +48,7 @@ func (s *PostgresEvent) InitDB() error {
 }
 
 func (s *PostgresEvent) CreateEventTable() error {
-
+	//First creating of the Data table
 	queryCreate := `CREATE TABLE IF NOT EXISTS event_table (
 					id SERIAL PRIMARY KEY,
 					name VARCHAR(65),
@@ -59,6 +62,7 @@ func (s *PostgresEvent) CreateEventTable() error {
 }
 
 func (s *PostgresEvent) CreateEvent(e *Event) error {
+	//Creating tnew row with all info
 	query := `INSERT INTO event_table (name, description, event_date, available_tickets, ticket_price) 
 			VALUES ($1, $2, $3, $4, $5)`
 
@@ -76,6 +80,7 @@ func (s *PostgresEvent) CreateEvent(e *Event) error {
 }
 
 func (s *PostgresEvent) UpdateEvent(e *Event, id uint) error {
+	//Updating the row
 	query := `UPDATE event_table 
 			SET (name = $1, description = $2, event_date = $3, 
 				available_tickets = $4, ticket_price = $4)
