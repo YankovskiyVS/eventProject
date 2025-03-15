@@ -6,7 +6,7 @@ ADD go.mod .
 
 COPY . .
 
-RUN go build -o main main.go handle_create.go handle_delete.go handle_update.go postgresql.go http.go
+RUN go build -o main main.go handle_create.go handle_delete.go handle_update.go postgresql.go http.go typesDB.go
 
 FROM alpine
 

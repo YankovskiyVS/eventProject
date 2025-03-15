@@ -1,1 +1,2 @@
-bin/eventProject .env
+bin/eventProject 
+.env
