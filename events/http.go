@@ -10,14 +10,16 @@ import (
 
 type APIServer struct {
 	listenAddr string
+	event      EventDB
 }
 
 type APIError struct {
 	Error string `json:"error"`
 }
 
-func EventAPIServer(addr string) *APIServer {
-	return &APIServer{listenAddr: addr}
+func EventAPIServer(addr string, event EventDB) *APIServer {
+	return &APIServer{listenAddr: addr,
+		event: event}
 }
 
 func (s *APIServer) Run() {
