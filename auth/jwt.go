@@ -7,6 +7,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+var ErrInvalidCredentials = errors.New("invalid credentials")
+
 var jwtSecret = []byte("your-secret-key")
 
 // JWT claims structure

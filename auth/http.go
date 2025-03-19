@@ -10,6 +10,7 @@ import (
 
 type APIServer struct {
 	listenAddr string
+	mongoUser  *MongoUserDB
 }
 
 type APIError struct {
@@ -26,8 +27,9 @@ type AuthResponse struct {
 	Role  string `json:"role"`
 }
 
-func NewAPIServer(addr string) *APIServer {
-	return &APIServer{listenAddr: addr}
+func NewAPIServer(addr string, mongoUser *MongoUserDB) *APIServer {
+	return &APIServer{listenAddr: addr,
+		mongoUser: mongoUser}
 }
 
 func (s *APIServer) Run() {

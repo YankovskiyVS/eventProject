@@ -34,5 +34,5 @@ func (s *APIServer) handleUpdateEvent(w http.ResponseWriter, r *http.Request) er
 		return errors.New("internal server error")
 	}
 
-	return WriteJSON(w, http.StatusOK, map[string]string{"message": "event was created successfully"})
+	return nil
 }

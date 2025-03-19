@@ -1,48 +1,43 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
-	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"golang.org/x/crypto/bcrypt"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (s *APIServer) handleSignUp(w http.ResponseWriter, r *http.Request) error {
 	var user User
+	//Decode the request body
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		return errors.New("invalid request body")
 	}
 
+	//Check that the role is valid
 	if user.Role != "user" && user.Role != "admin" {
-		return errors.New("invalid role")
+		return WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid role: must be 'user' or 'admin'",
+		})
 	}
-
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	log.Printf("user is %v", &user)
+	//Pass request to the DB method
+	err := s.mongoUser.SignUp(&user)
 	if err != nil {
-		return errors.New("failed to hash password")
-	}
-	user.Password = string(hashedPassword)
-
-	collection := client.Database("authdb").Collection("users")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Check for existing user
-	var existingUser User
-	err = collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&existingUser)
-	if err == nil {
-		return errors.New("username already exists")
+		if mongo.IsDuplicateKeyError(err) {
+			return WriteJSON(w, http.StatusConflict, map[string]string{
+				"error": "username already exists",
+			})
+		}
+		return WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": "registration failed" + err.Error(),
+		})
 	}
 
-	_, err = collection.InsertOne(ctx, user)
-	if err != nil {
-		return errors.New("failed to create user")
-	}
-
-	return WriteJSON(w, http.StatusCreated, map[string]string{"message": "User created successfully"})
+	return WriteJSON(w, http.StatusCreated, map[string]string{
+		"message": "User created successfully",
+		"id":      user.ID,
+	})
 }

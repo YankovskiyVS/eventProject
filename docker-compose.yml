@@ -57,6 +57,7 @@ services:
 
   mongo:
     image: mongo:4.0
+    container_name: auth-service-mongo
     hostname: mongo.local
     restart: always
     ports:
