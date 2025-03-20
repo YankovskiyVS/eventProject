@@ -13,13 +13,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/YankovskiyVS/eventProject/auth/transportLayer"
+	"github.com/YankovskiyVS/eventProject/auth/internal/database"
+	"github.com/YankovskiyVS/eventProject/auth/internal/transportLayer"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -27,6 +29,18 @@ var (
 	testDB      *mongo.Database
 	serverURL   = "http://localhost:8080"
 )
+
+type TestUserDB struct {
+	testDB *mongo.Database
+	coll   string
+}
+
+func NewTestUserDB(testDB *mongo.Database) *TestUserDB {
+	return &TestUserDB{
+		testDB: testDB,
+		coll:   "testUsers",
+	}
+}
 
 // TestMain sets up the MongoDB container and runs the tests
 func TestMain(m *testing.M) {
@@ -52,7 +66,8 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	mongoURI := fmt.Sprintf("mongodb://%s:%s", host, port.Port())
+	// Include username/password in the URI
+	mongoURI := fmt.Sprintf("mongodb://root:example@%s:%s", host, port.Port())
 
 	// Initialize MongoDB client
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
@@ -60,11 +75,14 @@ func TestMain(m *testing.M) {
 		fmt.Printf("Failed to connect to MongoDB: %v\n", err)
 		os.Exit(1)
 	}
+
 	mongoClient = client
 	testDB = client.Database("testdb")
 
 	// Start the microservice
-	go transportLayer.Run()
+	mongoUserDB := database.NewMongoUserDB(testDB) // Use the real MongoUserDB
+	server := transportLayer.NewAPIServer(":8080", mongoUserDB)
+	go server.Run()
 	time.Sleep(2 * time.Second) // Wait for the server to start
 
 	// Run tests
@@ -129,9 +147,14 @@ func TestSignIn(t *testing.T) {
 	// Create a test user in MongoDB
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err := testDB.Collection("users").InsertOne(ctx, bson.M{
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("testpassword"), bcrypt.DefaultCost)
+	assert.NoError(t, err)
+
+	_, err = testDB.Collection("users").InsertOne(ctx, bson.M{
 		"username": "testuser",
-		"password": "$2a$10$examplehashedpassword", // Replace with a real hashed password
+		"password": string(hashedPassword),
 		"role":     "user",
 	})
 	assert.NoError(t, err)
