@@ -1,33 +1,16 @@
-package main
+package transportlayer
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 
+	"github.com/YankovskiyVS/eventProject/auth/database"
 	"github.com/gorilla/mux"
 )
 
-type APIServer struct {
-	listenAddr string
-	mongoUser  *MongoUserDB
-}
-
-type APIError struct {
-	Error string `json:"error"`
-}
-
-type AuthRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type AuthResponse struct {
-	Token string `json:"token"`
-	Role  string `json:"role"`
-}
-
-func NewAPIServer(addr string, mongoUser *MongoUserDB) *APIServer {
+// Start the factory
+func NewAPIServer(addr string, mongoUser *database.MongoUserDB) *APIServer {
 	return &APIServer{listenAddr: addr,
 		mongoUser: mongoUser}
 }

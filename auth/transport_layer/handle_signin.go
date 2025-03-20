@@ -1,10 +1,12 @@
-package main
+package transportlayer
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
 )
+
+var ErrInvalidCredentials = errors.New("invalid credentials")
 
 func (s *APIServer) handleSignIn(w http.ResponseWriter, r *http.Request) error {
 	var req AuthRequest

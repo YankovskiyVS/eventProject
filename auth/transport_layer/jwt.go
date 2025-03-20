@@ -1,4 +1,4 @@
-package main
+package transportlayer
 
 import (
 	"errors"
@@ -7,16 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var ErrInvalidCredentials = errors.New("invalid credentials")
-
 var jwtSecret = []byte("your-secret-key")
-
-// JWT claims structure
-type Claims struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	jwt.StandardClaims
-}
 
 // Generate JWT token
 func GenerateJWT(username, role string) (string, error) {

@@ -1,4 +1,4 @@
-package main
+package transportlayer
 
 import (
 	"encoding/json"
@@ -6,11 +6,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/YankovskiyVS/eventProject/auth/database"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (s *APIServer) handleSignUp(w http.ResponseWriter, r *http.Request) error {
-	var user User
+	var user database.User
 	//Decode the request body
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		return errors.New("invalid request body")

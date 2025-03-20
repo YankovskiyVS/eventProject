@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	transportlayer "github.com/YankovskiyVS/eventProject/auth/transport_layer"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,6 +32,8 @@ type MongoClientControler interface {
 var (
 	mongoClient *mongo.Client
 )
+
+var ErrInvalidCredentials = errors.New("invalid credentials")
 
 func initMongo() (*mongo.Database, error) {
 	if err := godotenv.Load(); err != nil {
@@ -94,7 +97,7 @@ func (s *MongoUserDB) SignUp(u *User) error {
 	return nil
 }
 
-func (s *MongoUserDB) SignIn(req AuthRequest) (string, string, error) {
+func (s *MongoUserDB) SignIn(req transportlayer.AuthRequest) (string, string, error) {
 	collection := s.db.Collection(s.coll)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -115,7 +118,7 @@ func (s *MongoUserDB) SignIn(req AuthRequest) (string, string, error) {
 		return "", "", err
 	}
 
-	token, err := GenerateJWT(user.Username, user.Role)
+	token, err := transportlayer.GenerateJWT(user.Username, user.Role)
 	if err != nil {
 		return "", "", fmt.Errorf("token generation failed: %w", err)
 	}
