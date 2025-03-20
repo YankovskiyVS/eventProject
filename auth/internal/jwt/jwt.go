@@ -1,4 +1,4 @@
-package transportlayer
+package jwt
 
 import (
 	"errors"
@@ -6,6 +6,13 @@ import (
 
 	"github.com/golang-jwt/jwt"
 )
+
+// JWT claims structure
+type Claims struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
+	jwt.StandardClaims
+}
 
 var jwtSecret = []byte("your-secret-key")
 

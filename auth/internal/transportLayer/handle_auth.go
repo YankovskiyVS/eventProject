@@ -1,8 +1,10 @@
-package transportlayer
+package transportLayer
 
 import (
 	"errors"
 	"net/http"
+
+	"github.com/YankovskiyVS/eventProject/auth/internal/jwt"
 )
 
 func (s *APIServer) handleAuth(w http.ResponseWriter, r *http.Request) error {
@@ -12,7 +14,7 @@ func (s *APIServer) handleAuth(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("missing authorization header")
 	}
 
-	claims, err := ValidateJWT(tokenString)
+	claims, err := jwt.ValidateJWT(tokenString)
 	if err != nil {
 		return errors.New("invalid token")
 	}

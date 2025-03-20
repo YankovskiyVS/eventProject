@@ -1,11 +1,11 @@
-package transportlayer
+package transportLayer
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 
-	"github.com/YankovskiyVS/eventProject/auth/database"
+	"github.com/YankovskiyVS/eventProject/auth/internal/database"
 	"github.com/gorilla/mux"
 )
 

@@ -1,15 +1,17 @@
-package transportlayer
+package transportLayer
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/YankovskiyVS/eventProject/auth/internal/models"
 )
 
 var ErrInvalidCredentials = errors.New("invalid credentials")
 
 func (s *APIServer) handleSignIn(w http.ResponseWriter, r *http.Request) error {
-	var req AuthRequest
+	var req models.AuthRequest
 	//Decode request body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, map[string]string{
@@ -32,7 +34,7 @@ func (s *APIServer) handleSignIn(w http.ResponseWriter, r *http.Request) error {
 			"error": "Authentication failed"})
 	}
 
-	return WriteJSON(w, http.StatusOK, AuthResponse{
+	return WriteJSON(w, http.StatusOK, models.AuthResponse{
 		Token: token,
 		Role:  role,
 	})

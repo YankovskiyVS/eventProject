@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	transportlayer "github.com/YankovskiyVS/eventProject/auth/transport_layer"
+	"github.com/YankovskiyVS/eventProject/auth/internal/jwt"
+	"github.com/YankovskiyVS/eventProject/auth/internal/models"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,20 +23,27 @@ type MongoUserDB struct {
 	coll string
 }
 
+func NewMongoUserDB(db *mongo.Database) *MongoUserDB {
+	return &MongoUserDB{
+		db:   db,
+		coll: "users",
+	}
+}
+
 type MongoClientControler interface {
-	SignIn(*User) error
-	SignUp(*User) error
-	CheckAuth(*User) error
-	GetAllUsers(*User) error
+	SignIn(*models.User) error
+	SignUp(*models.User) error
+	CheckAuth(*models.User) error
+	GetAllUsers(*models.User) error
 }
 
 var (
-	mongoClient *mongo.Client
+	MongoClient *mongo.Client
 )
 
 var ErrInvalidCredentials = errors.New("invalid credentials")
 
-func initMongo() (*mongo.Database, error) {
+func InitMongo() (*mongo.Database, error) {
 	if err := godotenv.Load(); err != nil {
 		return nil, fmt.Errorf("env load failed: %w", err)
 	}
@@ -54,14 +62,7 @@ func initMongo() (*mongo.Database, error) {
 	return client.Database(dbName), nil
 }
 
-func NewMongoUserDB(db *mongo.Database) *MongoUserDB {
-	return &MongoUserDB{
-		db:   db,
-		coll: "users",
-	}
-}
-
-func (s *MongoUserDB) SignUp(u *User) error {
+func (s *MongoUserDB) SignUp(u *models.User) error {
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -97,12 +98,12 @@ func (s *MongoUserDB) SignUp(u *User) error {
 	return nil
 }
 
-func (s *MongoUserDB) SignIn(req transportlayer.AuthRequest) (string, string, error) {
+func (s *MongoUserDB) SignIn(req models.AuthRequest) (string, string, error) {
 	collection := s.db.Collection(s.coll)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var user User
+	var user models.User
 	err := collection.FindOne(ctx, bson.M{"username": req.Username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -118,7 +119,7 @@ func (s *MongoUserDB) SignIn(req transportlayer.AuthRequest) (string, string, er
 		return "", "", err
 	}
 
-	token, err := transportlayer.GenerateJWT(user.Username, user.Role)
+	token, err := jwt.GenerateJWT(user.Username, user.Role)
 	if err != nil {
 		return "", "", fmt.Errorf("token generation failed: %w", err)
 	}
@@ -126,13 +127,13 @@ func (s *MongoUserDB) SignIn(req transportlayer.AuthRequest) (string, string, er
 	return token, user.Role, nil
 }
 
-func (s *MongoUserDB) GetAllUsers(ctx context.Context) ([]*User, error) {
+func (s *MongoUserDB) GetAllUsers(ctx context.Context) ([]*models.User, error) {
 	cursor, err := s.db.Collection(s.coll).Find(ctx, map[string]any{})
 	if err != nil {
 		return nil, err
 	}
 
-	users := []*User{}
+	users := []*models.User{}
 	err = cursor.All(ctx, &users)
 	return users, err
 }

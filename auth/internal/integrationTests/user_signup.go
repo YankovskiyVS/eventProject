@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/YankovskiyVS/eventProject/auth/transportLayer"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -63,7 +64,7 @@ func TestMain(m *testing.M) {
 	testDB = client.Database("testdb")
 
 	// Start the microservice
-	go main.main()
+	go transportLayer.Run()
 	time.Sleep(2 * time.Second) // Wait for the server to start
 
 	// Run tests

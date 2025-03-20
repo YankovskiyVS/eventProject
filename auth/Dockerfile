@@ -1,19 +1,35 @@
+# Stage 1: Build the application
 FROM golang:alpine AS builder
 
-WORKDIR /build/auth
+# Set the working directory inside the container
+WORKDIR /app
 
-ADD go.mod .
+# Copy the Go module files
+COPY go.mod go.sum ./
 
+# Download dependencies
+RUN go mod download
+
+# Copy the source code
 COPY . .
 
-RUN go build -o main main.go handle_auth.go handle_signin.go handle_signup.go http.go jwt.go db.go middlewares.go user.go
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
-FROM alpine
+# Stage 2: Create a minimal runtime image
+FROM alpine:latest
 
-WORKDIR /build/auth
+# Set the working directory
+WORKDIR /app
 
-COPY --from=builder /build/auth /build/auth
+# Copy the binary from the builder stage
+COPY --from=builder /app/main .
 
+# Copy environment variables (if needed)
+COPY .env .
+
+# Expose the port the application will run on
 EXPOSE 8000
 
-CMD ["/build/auth/main"]
+# Command to run the application
+CMD ["./main"]
