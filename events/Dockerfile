@@ -1,19 +1,27 @@
+# Stage 1: Build the application
 FROM golang:alpine AS builder
 
-WORKDIR /build/events
+# Set the working directory
+WORKDIR /app
 
-ADD go.mod .
+# Copy module files first for layer caching
+COPY go.mod go.sum ./
 
+# Download dependencies
+RUN go mod download
+
+# Copy entire project
 COPY . .
 
-RUN go build -o main main.go handle_create.go handle_delete.go handle_update.go postgresql.go http.go typesDB.go message_broker.go
+# Build from cmd directory
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd
 
-FROM alpine
+# Stage 2: Runtime image
+FROM alpine:latest
 
-WORKDIR /build/events
-
-COPY --from=builder /build/events /build/events
+WORKDIR /app
+COPY --from=builder /app/main .
+COPY --from=builder /app/.env .
 
 EXPOSE 8888
-
-CMD ["/build/events/main"]
+CMD ["./main"]
