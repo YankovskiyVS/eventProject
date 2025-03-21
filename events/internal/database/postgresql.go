@@ -1,11 +1,13 @@
-package main
+package database
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/YankovskiyVS/eventProject/events/internal/models"
 	_ "github.com/lib/pq"
 )
 
@@ -16,9 +18,10 @@ type PostgresEvent struct {
 // Make an interface that has all methods for the microservice
 // This intrfce is declared in the APIServer (http.go file)
 type EventDB interface {
-	CreateEvent(*Event) error
+	CreateEvent(*models.Event) error
 	DeleteEvent(uint) error
-	UpdateEvent(*Event, uint) error
+	UpdateEvent(*models.Event, uint) error
+	ReadEvent(*models.Event, uint) error
 }
 
 func NewPostgresEvent() *PostgresEvent {
@@ -39,6 +42,13 @@ func NewPostgresEvent() *PostgresEvent {
 		log.Fatal(err)
 		return nil
 	}
+
+	//Set connection pool params
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	log.Println("Successfully connected to PostgreSQL database")
 
 	return &PostgresEvent{db: db}
 }
@@ -61,7 +71,7 @@ func (s *PostgresEvent) CreateEventTable() error {
 	return err
 }
 
-func (s *PostgresEvent) CreateEvent(e *Event) error {
+func (s *PostgresEvent) CreateEvent(e *models.Event) error {
 	//Creating tnew row with all info
 	query := `INSERT INTO event_table (name, description, event_date, available_tickets, ticket_price) 
 			VALUES ($1, $2, $3, $4, $5)`
@@ -79,7 +89,7 @@ func (s *PostgresEvent) CreateEvent(e *Event) error {
 	return nil
 }
 
-func (s *PostgresEvent) UpdateEvent(e *Event, id uint) error {
+func (s *PostgresEvent) UpdateEvent(e *models.Event, id uint) error {
 	//Updating the row
 	query := `UPDATE event_table 
 			SET (name = $1, description = $2, event_date = $3, 
@@ -111,4 +121,9 @@ func (s *PostgresEvent) DeleteEvent(id uint) error {
 	}
 
 	return nil
+}
+
+func (s *PostgresEvent) ReadEvent(id uint) (*models.Event, error) {
+	var event *models.Event
+	return event, nil
 }

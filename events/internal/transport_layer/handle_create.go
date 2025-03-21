@@ -1,9 +1,11 @@
-package main
+package transportlayer
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/YankovskiyVS/eventProject/events/internal/models"
 )
 
 func (s *APIServer) handleCreateEvent(w http.ResponseWriter, r *http.Request) error {
@@ -14,7 +16,7 @@ func (s *APIServer) handleCreateEvent(w http.ResponseWriter, r *http.Request) er
 	}
 
 	//Decode request body
-	var event Event
+	var event models.Event
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		return errors.New("invalid request")
 	}

@@ -4,6 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/YankovskiyVS/eventProject/events/internal/database"
+	messagebroker "github.com/YankovskiyVS/eventProject/events/internal/message_broker"
+	transportlayer "github.com/YankovskiyVS/eventProject/events/internal/transport_layer"
 	"github.com/joho/godotenv"
 )
 
@@ -15,17 +18,17 @@ func main() {
 	}
 
 	//Connect to the posgreSQL DB
-	event := NewPostgresEvent()
+	event := database.NewPostgresEvent()
 
 	// Initialize Kafka producer
 	brokers := []string{"localhost:9092"}
-	producer, err := NewKafkaProducer(brokers)
+	producer, err := messagebroker.NewKafkaProducer(brokers)
 	if err != nil {
 		log.Fatalf("Failed to create Kafka producer: %v", err)
 	}
 
 	// Initialize Kafka consumer
-	consumer, err := NewKafkaConsumer(brokers)
+	consumer, err := messagebroker.NewKafkaConsumer(brokers)
 	if err != nil {
 		log.Fatalf("Failed to create Kafka consumer: %v", err)
 	}
@@ -33,6 +36,6 @@ func main() {
 	port := os.Getenv("API_PORT")
 
 	//Start and run the server
-	server := EventAPIServer(port, event, *consumer, *producer)
+	server := transportlayer.EventAPIServer(port, event, *consumer, *producer)
 	server.Run()
 }
