@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"time"
 
@@ -48,15 +49,30 @@ func InitMongo() (*mongo.Database, error) {
 		return nil, fmt.Errorf("env load failed: %w", err)
 	}
 
-	dbURI := os.Getenv("DB_URI")
+	// Get environment variables
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
+
+	// Build connection string with proper scheme
+	connStr := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s",
+		url.QueryEscape(user),
+		url.QueryEscape(pass),
+		host,
+		port,
+		dbName)
+
+	// For Docker-to-Docker communication (without auth):
+	// connStr := fmt.Sprintf("mongodb://%s:%s", host, port)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbURI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr))
 	if err != nil {
-		return nil, fmt.Errorf("connection failed to %s: %w", dbURI, err)
+		return nil, fmt.Errorf("connection failed: %w", err)
 	}
 
 	return client.Database(dbName), nil
