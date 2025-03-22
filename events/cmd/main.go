@@ -21,7 +21,7 @@ func main() {
 	event := database.NewPostgresEvent()
 
 	// Initialize Kafka producer
-	brokers := []string{"localhost:9092"}
+	brokers := []string{"kafka:9093"}
 	producer, err := messagebroker.NewKafkaProducer(brokers)
 	if err != nil {
 		log.Fatalf("Failed to create Kafka producer: %v", err)
