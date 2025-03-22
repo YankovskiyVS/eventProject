@@ -37,7 +37,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/events/id", makeHTTPHandleFunc(s.handleUpdateEvent)).Methods("PUT")
 	router.HandleFunc("/events/id", makeHTTPHandleFunc(s.handleDeleteEvent)).Methods("DELETE")
 	router.HandleFunc("/events/id", makeHTTPHandleFunc(s.handleGetEvent)).Methods("GET")
-	router.HandleFunc("/events/?dateTo&page=1&items_count=20", makeHTTPHandleFunc(s.handleDateGetEvent))
+	router.HandleFunc("/events", makeHTTPHandleFunc(s.handleListEvents)).Methods("GET")
 
 	log.Printf("Server running on %s", s.listenAddr)
 	log.Fatal(http.ListenAndServe(s.listenAddr, router))

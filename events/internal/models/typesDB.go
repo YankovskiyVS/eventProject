@@ -21,3 +21,11 @@ func NewEvent(Name, Desc string, Date time.Time, AvailableTickets, Price uint) *
 		Price:            Price,
 	}
 }
+
+type EventListResponse struct {
+	Data       []Event `json:"data"`
+	Page       int     `json:"page"`
+	ItemsCount int     `json:"items_count"`
+	TotalItems int     `json:"total_items"`
+	TotalPages int     `json:"total_pages"`
+}

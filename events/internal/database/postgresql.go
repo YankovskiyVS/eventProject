@@ -21,8 +21,8 @@ type EventDB interface {
 	CreateEvent(*models.Event) error
 	DeleteEvent(uint) error
 	UpdateEvent(*models.Event, uint) error
-	ReadEvent(uint) *sql.Row
-	GetEvents(time.Time, int) (*sql.Rows, error)
+	GetEvent(uint) (*models.Event, error)
+	ListEvents(time.Time, int, int) ([]models.Event, int, error)
 }
 
 func NewPostgresEvent() *PostgresEvent {
@@ -74,15 +74,20 @@ func (s *PostgresEvent) CreateEventTable() error {
 
 func (s *PostgresEvent) CreateEvent(e *models.Event) error {
 	//Creating tnew row with all info
-	query := `INSERT INTO event_table (name, description, event_date, available_tickets, ticket_price) 
-			VALUES ($1, $2, $3, $4, $5)`
+	query := `
+	INSERT INTO event_table 
+	(name, description, event_date, available_tickets, ticket_price) 
+	VALUES ($1, $2, $3, $4, $5)
+	`
 
-	_, err := s.db.Query(query,
+	_, err := s.db.Query(
+		query,
 		e.Name,
 		e.Desc,
 		e.Date,
 		e.AvailableTickets,
-		e.Price)
+		e.Price,
+	)
 
 	if err != nil {
 		return err
@@ -95,15 +100,17 @@ func (s *PostgresEvent) UpdateEvent(e *models.Event, id uint) error {
 	query := `UPDATE event_table 
 			SET (name = $1, description = $2, event_date = $3, 
 				available_tickets = $4, ticket_price = $4)
-			WHERE id == $6`
+			WHERE id = $6`
 
-	_, err := s.db.Query(query,
+	_, err := s.db.Query(
+		query,
 		e.Name,
 		e.Desc,
 		e.Date,
 		e.AvailableTickets,
 		e.Price,
-		id)
+		id,
+	)
 
 	if err != nil {
 		return err
@@ -113,7 +120,11 @@ func (s *PostgresEvent) UpdateEvent(e *models.Event, id uint) error {
 
 func (s *PostgresEvent) DeleteEvent(id uint) error {
 	//Soft-delete the row by changing is_del col
-	query := `UPDATE event_table SET is_del = 1 WHERE id == $1`
+	query := `
+	UPDATE event_table
+	SET is_del = 1
+	WHERE id = $1
+	`
 
 	_, err := s.db.Query(query, id)
 
@@ -124,22 +135,83 @@ func (s *PostgresEvent) DeleteEvent(id uint) error {
 	return nil
 }
 
-func (s *PostgresEvent) ReadEvent(id uint) *sql.Row {
+func (s *PostgresEvent) GetEvent(id uint) (*models.Event, error) {
 	//Getting 1 event row bu ID
-	query := `SELECT * FROM event_table WHERE id == $1`
+	query := `
+	SELECT * FROM event_table
+	WHERE id = $1
+	`
 
-	event := s.db.QueryRow(query, id)
-
-	return event
+	var event models.Event
+	err := s.db.QueryRow(query, id).Scan(
+		&event.Id,
+		&event.Name,
+		&event.Desc,
+		&event.Date,
+		&event.AvailableTickets,
+		&event.Price,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("event not found")
+		}
+		return nil, fmt.Errorf("database error: %w", err)
+	}
+	return &event, nil
 }
 
-func (s *PostgresEvent) GetEvents(date time.Time, num int) (*sql.Rows, error) {
-	//Get `num` of events which start date > `date`
-	query := `SELECT * FROM event_table WHERE event_date > $1 ORDER BY event_date ASC LIMIT $2`
+func (s *PostgresEvent) ListEvents(dateTo *time.Time, page, itemsCount int) ([]models.Event, int, error) {
+	//Get `itemsCount` of events which start date > `date`
+	query := `
+			SELECT * FROM event_table 
+			WHERE event_date <= $1 AND is_del = 0 
+			ORDER BY event_date DESC 
+			LIMIT $2 OFFSET $3
+			`
 
-	events, err := s.db.Query(query, date, num)
+	//Calculate OFFSET for pagination
+	offset := (page - 1) * itemsCount
+
+	//Execute the main query
+	rows, err := s.db.Query(query, dateTo, itemsCount, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, fmt.Errorf("database query error: %w", err)
 	}
-	return events, nil
+	defer rows.Close()
+
+	var events []models.Event
+
+	for rows.Next() {
+		var event models.Event
+		err := rows.Scan(
+			&event.Id,
+			&event.Name,
+			&event.Desc,
+			&event.Date,
+			&event.AvailableTickets,
+			&event.Price,
+		)
+		if err != nil {
+			return nil, 0, fmt.Errorf("row scanning error: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	//Get total count for pagination
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM events 
+		WHERE ($1::timestamp IS NULL OR date <= $1)
+	`
+	var total int
+	err = s.db.QueryRow(countQuery, dateTo).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("count query error: %w", err)
+	}
+
+	return events, total, nil
 }
