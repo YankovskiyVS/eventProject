@@ -3,6 +3,10 @@ package transportlayer
 import (
 	"errors"
 	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func (s *APIServer) handleGetEvent(w http.ResponseWriter, r *http.Request) error {
@@ -12,13 +16,19 @@ func (s *APIServer) handleGetEvent(w http.ResponseWriter, r *http.Request) error
 		return errors.New("status forbidden")
 	}
 
-	//Connect handler with the method to DB
-	err := s.event.CreateEvent(&event)
+	vars := mux.Vars(r)
+	eventID, err := strconv.Atoi(vars["id"])
 	if err != nil {
+		return errors.New("invalid id format")
+	}
+
+	//Connect handler with the method to DB
+	event := s.event.ReadEvent(uint(eventID))
+	if event == nil {
 		return errors.New("internal server error")
 	}
 
-	return nil
+	return WriteJSON(w, http.StatusOK, event)
 }
 
 func (s *APIServer) handleDateGetEvent(w http.ResponseWriter, r *http.Request) error {
@@ -29,10 +39,11 @@ func (s *APIServer) handleDateGetEvent(w http.ResponseWriter, r *http.Request) e
 	}
 
 	//Connect handler with the method to DB
-	err := s.event.CreateEvent(&event)
+	date, num := time.Now(), 20
+	events, err := s.event.GetEvents(date, num)
 	if err != nil {
 		return errors.New("internal server error")
 	}
 
-	return nil
+	return WriteJSON(w, http.StatusOK, events)
 }

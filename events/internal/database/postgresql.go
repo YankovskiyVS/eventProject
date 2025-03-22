@@ -21,7 +21,8 @@ type EventDB interface {
 	CreateEvent(*models.Event) error
 	DeleteEvent(uint) error
 	UpdateEvent(*models.Event, uint) error
-	ReadEvent(*models.Event, uint) error
+	ReadEvent(uint) *sql.Row
+	GetEvents(time.Time, int) (*sql.Rows, error)
 }
 
 func NewPostgresEvent() *PostgresEvent {
@@ -123,7 +124,22 @@ func (s *PostgresEvent) DeleteEvent(id uint) error {
 	return nil
 }
 
-func (s *PostgresEvent) ReadEvent(id uint) (*models.Event, error) {
-	var event *models.Event
-	return event, nil
+func (s *PostgresEvent) ReadEvent(id uint) *sql.Row {
+	//Getting 1 event row bu ID
+	query := `SELECT * FROM event_table WHERE id == $1`
+
+	event := s.db.QueryRow(query, id)
+
+	return event
+}
+
+func (s *PostgresEvent) GetEvents(date time.Time, num int) (*sql.Rows, error) {
+	//Get `num` of events which start date > `date`
+	query := `SELECT * FROM event_table WHERE event_date > $1 ORDER BY event_date ASC LIMIT $2`
+
+	events, err := s.db.Query(query, date, num)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
 }
