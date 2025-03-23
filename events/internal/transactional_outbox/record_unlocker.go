@@ -3,24 +3,19 @@ package transactionaloutbox
 import "time"
 
 type recordUnlocker struct {
-	store                   Store
-	time                    time.Time
-	MaxLockTimeDurationMins time.Duration
+	store           Store
+	maxLockDuration time.Duration
 }
 
-func newRecordUnlocker(store Store, maxLockTimeDurationMins time.Duration) recordUnlocker {
+func NewRecordUnlocker(store Store, maxLockTimeMinutes time.Duration) recordUnlocker {
 	return recordUnlocker{
-		MaxLockTimeDurationMins: maxLockTimeDurationMins,
-		store:                   store,
-		time:                    time.Time{},
+		maxLockDuration: maxLockTimeMinutes * time.Minute, // Convert minutes to duration
+		store:           store,
 	}
 }
 
 func (d recordUnlocker) UnlockExpiredMessages() error {
-	expiryTime := d.time.Time.UTC().Add(-d.MaxLockTimeDurationMins)
-	clearErr := d.store.ClearLocksWithDurationBeforeDate(expiryTime)
-	if clearErr != nil {
-		return clearErr
-	}
-	return nil
+	// Calculate expiration time relative to current time
+	expiryTime := time.Now().UTC().Add(-d.maxLockDuration)
+	return d.store.ClearLocksWithDurationBeforeDate(expiryTime)
 }

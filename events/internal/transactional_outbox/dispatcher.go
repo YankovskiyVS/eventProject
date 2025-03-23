@@ -44,17 +44,17 @@ type Dispatcher struct {
 // NewDispatcher constructor
 func NewDispatcher(store Store, broker MessageBroker, settings DispatcherSettings, machineID string) Dispatcher {
 	return Dispatcher{
-		recordProcessor: newProcessor(
+		recordProcessor: NewProcessor(
 			store,
 			broker,
 			machineID,
 			settings.RetrialPolicy,
 		),
-		recordUnlocker: newRecordUnlocker(
+		recordUnlocker: NewRecordUnlocker(
 			store,
 			settings.MaxLockTimeDuration,
 		),
-		recordCleaner: newRecordCleaner(
+		recordCleaner: NewRecordCleaner(
 			store,
 			settings.MessagesRetentionDuration,
 		),

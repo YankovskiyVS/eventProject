@@ -10,27 +10,23 @@ import (
 // Publisher encapsulates the publishing functionality of the outbox pattern
 type Publisher struct {
 	store Store
-	time  time.Time
-	uuid  uuid.UUID
 }
 
 // NewPublisher is the Publisher constructor
 func NewPublisher(store Store) Publisher {
 	return Publisher{
 		store: store,
-		time:  time.Time{},
-		uuid:  uuid.UUID{},
 	}
 }
 
 // Send stores the provided Message within the provided sql.Tx
 func (p Publisher) Send(msg Message, tx *sql.Tx) error {
-	newID := p.uuid.ID()
+	newID := uuid.New()
 	record := Record{
 		ID:          newID,
 		Message:     msg,
 		State:       PendingDelivery,
-		CreatedOn:   p.time.Time.UTC(),
+		CreatedOn:   time.Now().UTC(),
 		LockID:      nil,
 		LockedOn:    nil,
 		ProcessedOn: nil,
