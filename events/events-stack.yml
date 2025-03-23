@@ -5,11 +5,16 @@ services:
     ports:
       - "8888:8888"
     environment:
-      - PGHOST=postgres
+      - PGHOST=postgres_primary
       - PGPORT=5432
-      - PGUSER=postgres
+      - PGUSER=postgres_primary
       - PGPASSWORD=postgres
       - PGDATABASE=event_table
+      - PGHOST_2=postgres_outbox
+      - PGPORT_2=5432
+      - PGUSER_2=postgres_outbox
+      - PGPASSWORD_2=postgres
+      - PGDATABASE_2=outbox
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.event-server.rule=Host(`event.localhost`)"
@@ -35,6 +40,19 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - shared-network
+
+    postgres:
+      image: postgres:latest
+      container_name: outbox-db
+      hostname: postgres.local
+      restart: always
+      environment:
+        - POSTGRES_PASSWORD=postgres
+        - POSTGRES_DB=outbox
+      volumes:
+        - postgres-data:/var/lib/postgresql/data
+      networks:
+        - shared-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
