@@ -60,13 +60,16 @@ func (s *PostgresEvent) InitDB() error {
 
 func (s *PostgresEvent) CreateEventTable() error {
 	//First creating of the Data table
-	queryCreate := `CREATE TABLE IF NOT EXISTS event_table (
-					id SERIAL PRIMARY KEY,
-					name VARCHAR(65),
-					description TEXT,
-					event_date DATE,
-					available_tickets UINT,
-					ticket_price UINT, is_del DEFAULT 0)`
+	queryCreate := `
+	CREATE TABLE IF NOT EXISTS event_table (
+	id SERIAL PRIMARY KEY,
+    name VARCHAR(65),
+    description TEXT,
+    event_date DATE,
+    available_tickets INTEGER CHECK (available_tickets >= 0),
+    ticket_price NUMERIC(10, 2) CHECK (ticket_price >= 0),
+    is_del BOOLEAN DEFAULT FALSE
+	)`
 
 	_, err := s.db.Exec(queryCreate)
 	return err
@@ -122,7 +125,7 @@ func (s *PostgresEvent) DeleteEvent(id uint) error {
 	//Soft-delete the row by changing is_del col
 	query := `
 	UPDATE event_table
-	SET is_del = 1
+	SET is_del = TRUE
 	WHERE id = $1
 	`
 
@@ -164,7 +167,7 @@ func (s *PostgresEvent) ListEvents(dateTo *time.Time, page, itemsCount int) ([]m
 	//Get `itemsCount` of events which start date > `date`
 	query := `
 			SELECT * FROM event_table 
-			WHERE event_date <= $1 AND is_del = 0 
+			WHERE event_date <= $1 AND is_del = FALSE 
 			ORDER BY event_date DESC 
 			LIMIT $2 OFFSET $3
 			`

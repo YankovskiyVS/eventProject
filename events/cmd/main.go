@@ -19,6 +19,7 @@ func main() {
 
 	//Connect to the posgreSQL DB
 	event := database.NewPostgresEvent()
+	event.InitDB()
 
 	// Initialize Kafka producer
 	brokers := []string{"kafka:9093"}
