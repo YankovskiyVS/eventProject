@@ -30,7 +30,7 @@ func (p Publisher) Send(msg Message, tx *sql.Tx) error {
 		ID:          newID,
 		Message:     msg,
 		State:       PendingDelivery,
-		CreatedOn:   p.time.UTC(),
+		CreatedOn:   p.time.Time.UTC(),
 		LockID:      nil,
 		LockedOn:    nil,
 		ProcessedOn: nil,

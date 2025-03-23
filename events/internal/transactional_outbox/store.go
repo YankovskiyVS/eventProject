@@ -42,18 +42,25 @@ const (
 
 // Store is the interface that should be implemented by SQL-like database drivers to support the outbox functionality
 type Store interface {
+
 	// AddRecordTx stores the message within the provided database transaction
 	AddRecordTx(record Record, tx *sql.Tx) error
+
 	// GetRecordsByLockID returns the records by lockID
 	GetRecordsByLockID(lockID string) ([]Record, error)
+
 	// UpdateRecordLockByState updates the lock of all records with the provided state
 	UpdateRecordLockByState(lockID string, lockedOn time.Time, state RecordState) error
-	// UpdateRecordByID updates the provided the record
+
+	// UpdateRecordByID updates the provided record
 	UpdateRecordByID(message Record) error
+
 	// ClearLocksWithDurationBeforeDate clears the locks of records with a lock time before the provided time
 	ClearLocksWithDurationBeforeDate(time time.Time) error
+
 	// ClearLocksByLockID clears all records locked by the provided lockID
 	ClearLocksByLockID(lockID string) error
+
 	// RemoveRecordsBeforeDatetime removes all records before the provided time
 	RemoveRecordsBeforeDatetime(expiryTime time.Time) error
 }
