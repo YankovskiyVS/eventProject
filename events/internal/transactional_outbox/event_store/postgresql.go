@@ -31,6 +31,32 @@ func NewStore() (*Store, error) {
 	}, nil
 }
 
+func (s *Store) InitEventStore() error {
+	return s.CreateStoreTable()
+}
+
+func (s *Store) CreateStoreTable() error {
+	//First creating of the Data table
+	queryCreate := `
+    CREATE TABLE IF NOT EXISTS outbox (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        data BYTEA NOT NULL,
+        state SMALLINT NOT NULL DEFAULT 0 CHECK (state BETWEEN 0 AND 3),
+        created_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        locked_by UUID NULL,
+        locked_on TIMESTAMPTZ NULL,
+        processed_on TIMESTAMPTZ NULL,
+        number_of_attempts INT NOT NULL DEFAULT 0 CHECK (number_of_attempts >= 0),
+        last_attempted_on TIMESTAMPTZ NULL,
+        error TEXT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_outbox_poll ON outbox (state, created_on);
+	)`
+
+	_, err := s.db.Exec(queryCreate)
+	return err
+}
+
 // ClearLocksWithDurationBeforeDate clears all records which are too old
 func (s Store) ClearLocksWithDurationBeforeDate(time time.Time) error {
 	_, err := s.db.Exec(`
