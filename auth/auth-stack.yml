@@ -1,0 +1,37 @@
+services:
+
+  auth-server:
+    build: ./auth
+    container_name: auth-server
+    ports:
+      - "8000:8000"
+    labels:
+       - "traefik.enable=true"
+       - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
+       - "traefik.http.services.auth.loadbalancer.server.port=8000"
+    depends_on:
+      - mongo
+    networks:
+      - shared-network
+
+  mongo:
+    image: mongo:4.0
+    container_name: auth-service-mongo
+    hostname: mongo.local
+    restart: always
+    ports:
+      - "27017:27017"
+    command:
+      - "mongod"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: false
+
+volumes:
+  mongo-data:
+    external: false
