@@ -18,41 +18,44 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.event-server.rule=Host(`event.localhost`)"
-      - traefik.http.routers.app.middlewares=auth-forward
-      - traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:8000/auth
-      - traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true
-      - traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=X-User-Id,X-User-Role
+      - "traefik.http.routers.app.middlewares=auth-forward"
+      - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:8000/auth"
+      - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=X-User-Id,X-User-Role"
     depends_on:
-      - postgres
+      - postgres-primary
+      - postgres-outbox
       - kafka
     networks:
       - shared-network
 
-  postgres:
+  postgres-primary:
     image: postgres:latest
     container_name: events-db
-    hostname: postgres.local
+    hostname: postgres_primary
     restart: always
     environment:
+      - POSTGRES_USER=postgres_primary
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=event_table
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-primary-data:/var/lib/postgresql/data
     networks:
       - shared-network
 
-    postgres:
-      image: postgres:latest
-      container_name: outbox-db
-      hostname: postgres.local
-      restart: always
-      environment:
-        - POSTGRES_PASSWORD=postgres
-        - POSTGRES_DB=outbox
-      volumes:
-        - postgres-data:/var/lib/postgresql/data
-      networks:
-        - shared-network
+  postgres-outbox:
+    image: postgres:latest
+    container_name: outbox-db
+    hostname: postgres_outbox
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_outbox
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=outbox
+    volumes:
+      - postgres-outbox-data:/var/lib/postgresql/data
+    networks:
+      - shared-network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -70,24 +73,20 @@ services:
     ports:
       - "9093:9093"
     environment:
-      # Configure listeners for both docker and host communication
       KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
       KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
-      # Settings required for KRaft mode
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
-      # Listener to use for broker-to-broker communication
       KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
-      # Required for a single node cluster
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - shared-network
 
   kafka-ui:
-    image: kafbat/kafka-ui:main
+    image: provectuslabs/kafka-ui:latest  # Fixed image name
     container_name: events-kafka-ui
     ports:
       - 8080:8080
@@ -97,11 +96,13 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
     depends_on:
       - kafka
+    networks:
+      - shared-network
 
 networks:
   shared-network:
-    external: false
+    driver: bridge
 
 volumes:
-  postgres-data:
-    external: false
+  postgres-primary-data:
+  postgres-outbox-data:
