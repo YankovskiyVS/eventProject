@@ -51,7 +51,7 @@ func (s *Store) CreateStoreTable() error {
         error TEXT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_outbox_poll ON outbox (state, created_on);
-	)`
+	`
 
 	_, err := s.db.Exec(queryCreate)
 	return err

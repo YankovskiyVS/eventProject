@@ -1,6 +1,7 @@
 package transactionaloutbox
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -56,22 +57,26 @@ func (d defaultRecordProcessor) publishMessages(records []Record) error {
 				rec.State = MaxAttemptsReached
 			}
 
+			// Handle update error and accumulate both errors
 			if updateErr := d.store.UpdateRecordByID(rec); updateErr != nil {
-				finalErr := fmt.Errorf("multiple errors occurred: %w while handling %v", updateErr, finalErr)
-				return finalErr
+				finalErr = errors.Join(finalErr,
+					fmt.Errorf("update failed for %s: %w", rec.ID, updateErr))
 			}
-
-			finalErr = fmt.Errorf("failed to send message %s: %w (record update attempted)", rec.ID, err)
+			// Accumulate send error
+			finalErr = errors.Join(finalErr,
+				fmt.Errorf("send failed for %s: %w", rec.ID, err))
 			continue
 		}
 
-		// Success case
+		// Success case handling
 		rec.State = Delivered
 		rec.LockedOn = nil
 		rec.LockID = nil
 		rec.ProcessedOn = &now
 		if err := d.store.UpdateRecordByID(rec); err != nil {
-			finalErr = fmt.Errorf("failed to update delivered record %s: %w", rec.ID, err)
+			// Accumulate delivery update error
+			finalErr = errors.Join(finalErr,
+				fmt.Errorf("delivery update failed for %s: %w", rec.ID, err))
 		}
 	}
 	return finalErr
