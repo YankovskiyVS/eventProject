@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ type Order struct {
 	ID          uuid.UUID
 	UserID      int
 	CreatedAt   time.Time
+	UpdatedAt   time.Time
 	TotalPrice  float32
 	Tickets     *Tickets
 	OrderStatus OrderStatus
@@ -25,4 +27,32 @@ type OrderStatus struct {
 type EventStatus struct {
 	Status     string
 	InProgress bool
+}
+
+// Start the factory for the order entity
+func NewOrder(userId int, totalPrice float32, tickets *Tickets,
+	orderStatus OrderStatus, eventStatus EventStatus) *Order {
+	return &Order{
+		ID:          uuid.New(),
+		UserID:      userId,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		TotalPrice:  totalPrice,
+		Tickets:     tickets,
+		OrderStatus: orderStatus,
+		EventStatus: eventStatus,
+	}
+}
+
+// Order entity validation
+func (o *Order) validate() error {
+	switch {
+
+	case o.UserID == 0:
+		return errors.New("cannot get user ID")
+
+	case o.CreatedAt.After(o.UpdatedAt):
+		return errors.New("created_at must be before updated_at")
+	}
+	return nil
 }
