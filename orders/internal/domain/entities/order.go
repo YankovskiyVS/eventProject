@@ -29,6 +29,23 @@ type EventStatus struct {
 	InProgress bool
 }
 
+// Start the factory for the OrderStatus object value
+func NewOrderStatus(status string, created bool, paid bool) OrderStatus {
+	return OrderStatus{
+		Status:  status,
+		Created: created,
+		Paid:    paid,
+	}
+}
+
+// Start the factory for the EventStatus object value
+func NewEventStatus(status string, inProgress bool) EventStatus {
+	return EventStatus{
+		Status:     status,
+		InProgress: inProgress,
+	}
+}
+
 // Start the factory for the order entity
 func NewOrder(userId int, totalPrice float32, tickets *Tickets,
 	orderStatus OrderStatus, eventStatus EventStatus) *Order {

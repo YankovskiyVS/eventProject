@@ -19,6 +19,16 @@ type TicketsStatus struct {
 	TotalPrice      float32
 }
 
+// Start the factory for the TicetsStatus objest value
+func NewTicketsStatus(number int, availableNumber int, price float32, totalPrice float32) TicketsStatus {
+	return TicketsStatus{
+		Number:          number,
+		AvailableNumber: availableNumber,
+		Price:           price,
+		TotalPrice:      totalPrice,
+	}
+}
+
 // Start the factory for the ticket entity
 func NewTickets(ticketStatus TicketsStatus, eventId int) *Tickets {
 	return &Tickets{
