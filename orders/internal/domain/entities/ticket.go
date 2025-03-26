@@ -52,6 +52,7 @@ func (t *Tickets) validate() error {
 	return nil
 }
 
+// Adds new ticket that has not been added yet
 // Bug: think about TicketStatus - how to get all info from event service to the function
 func (t *Tickets) AddTicket(eventId int) error {
 	t.EventID = eventId

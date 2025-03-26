@@ -9,7 +9,7 @@ func (vt *ValidatedTickets) isValid() bool {
 	return vt.isValidated
 }
 
-func NewValidateTickets(tickets *Tickets) (*ValidatedTickets, error) {
+func NewValidatedTickets(tickets *Tickets) (*ValidatedTickets, error) {
 	if err := tickets.validate(); err != nil {
 		return nil, err
 	}

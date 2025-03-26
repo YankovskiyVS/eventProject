@@ -9,7 +9,7 @@ func (vo *ValidatedOrder) isValid() bool {
 	return vo.isValidated
 }
 
-func NewValidatedOrder(order *Order) (*ValidatedOrder, error) {
+func NewValidateddOrder(order *Order) (*ValidatedOrder, error) {
 	if err := order.validate(); err != nil {
 		return nil, err
 	}
