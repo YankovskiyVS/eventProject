@@ -39,15 +39,19 @@ func NewTickets(ticketStatus TicketsStatus, eventId int) *Tickets {
 }
 
 func (t *Tickets) validate() error {
-	switch {
-	case t.EventID == 0:
+	if t.EventID == 0 {
 		return errors.New("error: cannot get the ID of the event")
+	}
 
-	case t.TicketsStatus.Number > t.TicketsStatus.AvailableNumber:
-		return errors.New("error: cannot buy mowe tickets than available")
+	if t.TicketsStatus.Number > t.TicketsStatus.AvailableNumber {
+		return errors.New("error: cannot buy more tickets than available")
+	}
 
-	case t.TicketsStatus.TotalPrice < t.TicketsStatus.Price:
+	if t.TicketsStatus.TotalPrice < t.TicketsStatus.Price {
 		return errors.New("error: total price of the tickets is less than the price of one ticket")
+	}
+	if float32(t.TicketsStatus.Number)*t.TicketsStatus.Price != t.TicketsStatus.TotalPrice {
+		return errors.New("error: total price is not calculated right")
 	}
 	return nil
 }

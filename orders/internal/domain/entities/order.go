@@ -77,13 +77,15 @@ func NewOrder(userId int, tickets ValidatedTickets,
 
 // Order entity validation
 func (o *Order) validate() error {
-	switch {
 
-	case o.UserID == 0:
+	if o.UserID == 0 {
 		return errors.New("cannot get user ID")
-
-	case o.CreatedAt.After(o.UpdatedAt):
+	}
+	if o.CreatedAt.After(o.UpdatedAt) {
 		return errors.New("created_at must be before updated_at")
+	}
+	if o.EventStatus.Status == "" {
+		return errors.New("event status of the order must be: ended, in_progress or cancelled. cannot be empty")
 	}
 	return nil
 }

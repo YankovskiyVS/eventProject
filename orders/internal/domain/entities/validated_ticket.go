@@ -5,10 +5,6 @@ type ValidatedTickets struct {
 	isValidated bool
 }
 
-func (vt *ValidatedTickets) isValid() bool {
-	return vt.isValidated
-}
-
 func NewValidatedTickets(tickets *Tickets) (*ValidatedTickets, error) {
 	if err := tickets.validate(); err != nil {
 		return nil, err

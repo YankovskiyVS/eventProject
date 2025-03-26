@@ -7,7 +7,7 @@ import (
 )
 
 func TestTickets(t *testing.T) {
-	ticketsStatus := NewTicketsStatus(3, 4, 20.0, 600.0)
+	ticketsStatus := NewTicketsStatus(3, 4, 20.0, 60.0)
 	tickets := NewTickets(ticketsStatus, 1234)
 	if tickets.ID == (uuid.UUID{}) {
 		t.Errorf("Expected tickets' ID to be set, but got %s", tickets.ID)
