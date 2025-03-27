@@ -7,12 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type OrderStatus string
+type orderStatus string
 
 const (
-	StatusCreated  OrderStatus = "created"
-	StatusDone     OrderStatus = "done"
-	StatusCanceled OrderStatus = "canceled"
+	StatusCreated  orderStatus = "created"
+	StatusDone     orderStatus = "done"
+	StatusCanceled orderStatus = "canceled"
 )
 
 type Order struct {
@@ -21,7 +21,7 @@ type Order struct {
 	createdAt   time.Time
 	updatedAt   time.Time
 	tickets     []*Ticket
-	orderStatus OrderStatus
+	orderStatus orderStatus
 	totalPrice  float32
 }
 
