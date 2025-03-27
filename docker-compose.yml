@@ -21,4 +21,4 @@ services:
       --log.level=DEBUG 
 
 # To run:
-# docker-compose -f docker-compose.yml -f auth/auth-stack.yml -f events/events-stack.yml up
+# docker-compose -f docker-compose.yml -f auth/auth-stack.yml -f events/events-stack.yml  -f orders/orders-stack.yml up

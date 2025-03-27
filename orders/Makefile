@@ -1,4 +1,4 @@
-BINARY_NAME = events
+BINARY_NAME = orders
 BUILD_DIR = bin
 INTEGRATION_TAGS = integration
 
