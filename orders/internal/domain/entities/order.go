@@ -33,7 +33,7 @@ func NewOrder(userID int, tickets []*Ticket) (*Order, error) {
 		return nil, errors.New("order must contain at least one ticket")
 	}
 
-	totalPrice := calculateTotalPrice(tickets)
+	totalPrice := CalculateTotalPrice(tickets)
 
 	return &Order{
 		id:          uuid.New(),
@@ -46,8 +46,29 @@ func NewOrder(userID int, tickets []*Ticket) (*Order, error) {
 	}, nil
 }
 
+// Getter methods:
+func (o *Order) ID() uuid.UUID {
+	return o.id
+}
+
 func (o *Order) UserID() int {
 	return o.userID
+}
+
+func (o *Order) OrderStatus() orderStatus {
+	return o.orderStatus
+}
+
+func (o *Order) CreatedAt() time.Time {
+	return o.createdAt
+}
+
+func (o *Order) UpdatedAt() time.Time {
+	return o.updatedAt
+}
+
+func (o *Order) Tickets() []*Ticket {
+	return o.tickets
 }
 
 func (o *Order) AddTicket(t *Ticket) error {
@@ -55,7 +76,35 @@ func (o *Order) AddTicket(t *Ticket) error {
 	return nil
 }
 
-func calculateTotalPrice(tickets []*Ticket) float32 {
+// Setter method:
+func NewOrderWithDetails(
+	id uuid.UUID,
+	userID int,
+	tickets []*Ticket,
+	status orderStatus,
+	createdAt time.Time,
+	updatedAt time.Time,
+) (*Order, error) {
+	if userID <= 0 {
+		return nil, errors.New("invalid user ID")
+	}
+	if len(tickets) == 0 {
+		return nil, errors.New("order must contain tickets")
+	}
+
+	return &Order{
+		id:          id,
+		userID:      userID,
+		createdAt:   createdAt,
+		updatedAt:   updatedAt,
+		tickets:     tickets,
+		orderStatus: status,
+		totalPrice:  CalculateTotalPrice(tickets),
+	}, nil
+}
+
+// Busuiness logic
+func CalculateTotalPrice(tickets []*Ticket) float32 {
 	var total float32
 	for _, t := range tickets {
 		total += t.price

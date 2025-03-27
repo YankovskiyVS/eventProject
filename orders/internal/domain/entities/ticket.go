@@ -26,3 +26,25 @@ func NewTicket(price float32, eventID int) (*Ticket, error) {
 		eventID: eventID,
 	}, nil
 }
+
+// Getter methods:
+func (t *Ticket) ID() uuid.UUID {
+	return t.id
+}
+
+func (t *Ticket) Price() float32 {
+	return t.price
+}
+
+func (t *Ticket) EventID() int {
+	return t.eventID
+}
+
+// Setter method:
+func NewTicketWithDetails(id uuid.UUID, price float32, eventID int) *Ticket {
+	return &Ticket{
+		id:      id,
+		price:   price,
+		eventID: eventID,
+	}
+}
