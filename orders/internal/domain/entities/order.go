@@ -16,13 +16,13 @@ const (
 )
 
 type Order struct {
-	ID          uuid.UUID
-	UserID      int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Tickets     []*Ticket
-	OrderStatus OrderStatus
-	TotalPrice  float32
+	id          uuid.UUID
+	userID      int
+	createdAt   time.Time
+	updatedAt   time.Time
+	tickets     []*Ticket
+	orderStatus OrderStatus
+	totalPrice  float32
 }
 
 func NewOrder(userID int, tickets []*Ticket) (*Order, error) {
@@ -36,38 +36,47 @@ func NewOrder(userID int, tickets []*Ticket) (*Order, error) {
 	totalPrice := calculateTotalPrice(tickets)
 
 	return &Order{
-		ID:          uuid.New(),
-		UserID:      userID,
-		CreatedAt:   time.Now().UTC(),
-		UpdatedAt:   time.Now().UTC(),
-		Tickets:     tickets,
-		OrderStatus: StatusCreated,
-		TotalPrice:  totalPrice,
+		id:          uuid.New(),
+		userID:      userID,
+		createdAt:   time.Now().UTC(),
+		updatedAt:   time.Now().UTC(),
+		tickets:     tickets,
+		orderStatus: StatusCreated,
+		totalPrice:  totalPrice,
 	}, nil
+}
+
+func (o *Order) UserID() int {
+	return o.userID
+}
+
+func (o *Order) AddTicket(t *Ticket) error {
+	o.tickets = append(o.tickets, t)
+	return nil
 }
 
 func calculateTotalPrice(tickets []*Ticket) float32 {
 	var total float32
 	for _, t := range tickets {
-		total += t.Price
+		total += t.price
 	}
 	return total
 }
 
 func (o *Order) Cancel() error {
-	if o.OrderStatus == StatusDone {
+	if o.orderStatus == StatusDone {
 		return errors.New("cannot cancel completed order")
 	}
-	o.OrderStatus = StatusCanceled
-	o.UpdatedAt = time.Now().UTC()
+	o.orderStatus = StatusCanceled
+	o.updatedAt = time.Now().UTC()
 	return nil
 }
 
 func (o *Order) Complete() error {
-	if o.OrderStatus != StatusCreated {
+	if o.orderStatus != StatusCreated {
 		return errors.New("invalid status transition")
 	}
-	o.OrderStatus = StatusDone
-	o.UpdatedAt = time.Now().UTC()
+	o.orderStatus = StatusDone
+	o.updatedAt = time.Now().UTC()
 	return nil
 }

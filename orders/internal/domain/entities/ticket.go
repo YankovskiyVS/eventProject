@@ -7,9 +7,9 @@ import (
 )
 
 type Ticket struct {
-	ID      uuid.UUID
-	Price   float32
-	EventID int
+	id      uuid.UUID
+	price   float32
+	eventID int
 }
 
 func NewTicket(price float32, eventID int) (*Ticket, error) {
@@ -21,8 +21,8 @@ func NewTicket(price float32, eventID int) (*Ticket, error) {
 	}
 
 	return &Ticket{
-		ID:      uuid.New(),
-		Price:   price,
-		EventID: eventID,
+		id:      uuid.New(),
+		price:   price,
+		eventID: eventID,
 	}, nil
 }
