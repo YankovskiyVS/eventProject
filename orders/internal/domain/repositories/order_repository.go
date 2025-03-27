@@ -6,7 +6,7 @@ import (
 )
 
 type OrderRepository interface {
-	Create(order *entities.ValidatedOrder) (entities.Order, error)
+	Create(order *entities.Order) (entities.Order, error)
 	FindAll(userID int) ([]*entities.Order, error)
 	FindByID(userID int, id uuid.UUID) (*entities.Order, error)
 	GetCurrent(userID int) (*entities.Order, error)

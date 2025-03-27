@@ -7,85 +7,49 @@ import (
 	"github.com/google/uuid"
 )
 
+type OrderStatus string
+
+const (
+	StatusCreated  OrderStatus = "created"
+	StatusDone     OrderStatus = "done"
+	StatusCanceled OrderStatus = "canceled"
+)
+
 type Order struct {
 	ID          uuid.UUID
 	UserID      int
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Tickets     Tickets
+	Tickets     []*Ticket
 	OrderStatus OrderStatus
-	EventStatus EventStatus
+	TotalPrice  float32
 }
 
-type OrderStatusValue string
-
-const (
-	StatusCreated  OrderStatusValue = "created"
-	StatusDone     OrderStatusValue = "done"
-	StatusCanceled OrderStatusValue = "canceled"
-)
-
-type OrderStatus struct {
-	Status  OrderStatusValue // created || done || cancelled
-	Created bool
-	Paid    bool
-}
-
-type EventStatusValue string
-
-const (
-	StatusEnded      EventStatusValue = "ended"
-	StatusInProgress EventStatusValue = "in_progress"
-	StatusCancelled  EventStatusValue = "cancelled"
-)
-
-type EventStatus struct {
-	Status     EventStatusValue // ended || in_progress || cancelled
-	InProgress bool
-}
-
-// Start the factory for the OrderStatus object value
-func NewOrderStatus(status OrderStatusValue, created bool, paid bool) OrderStatus {
-	return OrderStatus{
-		Status:  status,
-		Created: created,
-		Paid:    paid,
+func NewOrder(userID int, tickets []*Ticket) (*Order, error) {
+	if userID <= 0 {
+		return nil, errors.New("invalid user ID")
 	}
-}
-
-// Start the factory for the EventStatus object value
-func NewEventStatus(status EventStatusValue, inProgress bool) EventStatus {
-	return EventStatus{
-		Status:     status,
-		InProgress: inProgress,
+	if len(tickets) == 0 {
+		return nil, errors.New("order must contain at least one ticket")
 	}
-}
 
-// Start the factory for the order entity
-func NewOrder(userId int, tickets ValidatedTickets,
-	orderStatus OrderStatus, eventStatus EventStatus) *Order {
+	totalPrice := calculateTotalPrice(tickets)
+
 	return &Order{
 		ID:          uuid.New(),
-		UserID:      userId,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-		Tickets:     tickets.Tickets,
-		OrderStatus: orderStatus,
-		EventStatus: eventStatus,
-	}
+		UserID:      userID,
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
+		Tickets:     tickets,
+		OrderStatus: StatusCreated,
+		TotalPrice:  totalPrice,
+	}, nil
 }
 
-// Order entity validation
-func (o *Order) validate() error {
-
-	if o.UserID == 0 {
-		return errors.New("cannot get user ID")
+func calculateTotalPrice(tickets []*Ticket) float32 {
+	var total float32
+	for _, t := range tickets {
+		total += t.Price
 	}
-	if o.CreatedAt.After(o.UpdatedAt) {
-		return errors.New("created_at must be before updated_at")
-	}
-	if o.EventStatus.Status == "" {
-		return errors.New("event status of the order must be: ended, in_progress or cancelled. cannot be empty")
-	}
-	return nil
+	return total
 }
