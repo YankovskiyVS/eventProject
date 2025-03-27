@@ -53,3 +53,21 @@ func calculateTotalPrice(tickets []*Ticket) float32 {
 	}
 	return total
 }
+
+func (o *Order) Cancel() error {
+	if o.OrderStatus == StatusDone {
+		return errors.New("cannot cancel completed order")
+	}
+	o.OrderStatus = StatusCanceled
+	o.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (o *Order) Complete() error {
+	if o.OrderStatus != StatusCreated {
+		return errors.New("invalid status transition")
+	}
+	o.OrderStatus = StatusDone
+	o.UpdatedAt = time.Now().UTC()
+	return nil
+}
