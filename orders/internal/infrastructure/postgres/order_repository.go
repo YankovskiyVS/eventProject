@@ -11,15 +11,19 @@ import (
 )
 
 type OrderRepository struct {
-	db *sql.DB
+	orderDB  *sql.DB
+	ticketDB *sql.DB
 }
 
-func NewOrderRepository(db *sql.DB) repositories.OrderRepository {
-	return &OrderRepository{db: db}
+func NewOrderRepository(orderDB *sql.DB, ticketDB *sql.DB) repositories.OrderRepository {
+	return &OrderRepository{
+		orderDB:  orderDB,
+		ticketDB: ticketDB,
+	}
 }
 
 func (r *OrderRepository) Create(ctx context.Context, order *entities.Order) error {
-	tx, err := r.db.BeginTx(ctx, nil)
+	tx, err := r.orderDB.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)
 	}
@@ -80,7 +84,7 @@ func (r *OrderRepository) PayCurrent(ctx context.Context, order *entities.Order)
 func (r *OrderRepository) FindByID(ctx context.Context, userID int, orderUUID string) (*entities.Order, error) {
 	// Get order
 	var orderPG OrderPostgres
-	err := r.db.QueryRowContext(ctx, `
+	err := r.orderDB.QueryRowContext(ctx, `
         SELECT id, uuid, order_status, user_id, created_at, updated_at
         FROM orders
         WHERE uuid = $1 AND user_id = $2
@@ -97,7 +101,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, userID int, orderUUID st
 	}
 
 	// Get tickets
-	rows, err := r.db.QueryContext(ctx, `
+	rows, err := r.orderDB.QueryContext(ctx, `
         SELECT uuid, event_id, price
         FROM tickets
         WHERE order_id = $1

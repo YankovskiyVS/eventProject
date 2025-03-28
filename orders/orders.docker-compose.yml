@@ -9,12 +9,12 @@ services:
       - PGPORT_ORDER=5432
       - PGUSER_ORDER=postgres
       - PGPASSWORD_ORDER=postgres
-      - PGDATABASE_ORDER=order_table
+      - PGDATABASE_ORDER=orders
       - PGHOST_TICKET=postgres
       - PGPORT_TICKET=5432
       - PGUSER_TICKET=postgres
       - PGPASSWORD_TICKET=postgres
-      - PGDATABASE_TICKET=ticket_table
+      - PGDATABASE_TICKET=tickets
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.order-server.rule=Host(`order.localhost`)"
