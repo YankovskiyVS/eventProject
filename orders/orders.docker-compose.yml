@@ -23,8 +23,8 @@ services:
       - traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true
       - traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=X-User-Id,X-User-Role
     depends_on:
-      - postgres_order
-      - postgres_ticket
+      - postgres-ticket
+      - postgres-order
       - kafka
     networks:
       - shared-network
@@ -45,7 +45,7 @@ services:
   postgres-ticket:
     image: postgres:latest
     container_name: tickets-db
-    hostname: postgres_tickets
+    hostname: postgres_ticket
     restart: always
     environment:
       - POSTGRES_PASSWORD=postgres

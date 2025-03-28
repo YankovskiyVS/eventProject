@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Initialize databases
-	orderDB, err := database.NewPostgresConnection(
+	orderDB, err := postgres.NewPostgresConnection(
 		os.Getenv("PGHOST_ORDER"),
 		os.Getenv("PGPORT_ORDER"),
 		os.Getenv("PGUSER_ORDER"),
@@ -21,7 +21,7 @@ func main() {
 	}
 	defer orderDB.Close()
 
-	ticketDB, err := database.NewPostgresConnection(
+	ticketDB, err := postgres.NewPostgresConnection(
 		os.Getenv("PGHOST_TICKET"),
 		os.Getenv("PGPORT_TICKET"),
 		os.Getenv("PGUSER_TICKET"),
@@ -34,14 +34,12 @@ func main() {
 	defer ticketDB.Close()
 
 	// Initialize tables
-	if err := database.InitializeOrderDB(orderDB); err != nil {
+	if err := postgres.InitializeOrderDB(orderDB); err != nil {
 		log.Fatalf("Failed to initialize order DB: %v", err)
 	}
 
-	if err := database.InitializeTicketDB(ticketDB); err != nil {
+	if err := postgres.InitializeTicketDB(ticketDB); err != nil {
 		log.Fatalf("Failed to initialize ticket DB: %v", err)
 	}
 
-	// Create repository
-	repo := postgres.NewOrderRepository(orderDB, ticketDB)
 }
