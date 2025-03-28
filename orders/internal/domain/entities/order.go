@@ -7,12 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type orderStatus string
+type OrderStatus string
 
 const (
-	StatusCreated  orderStatus = "created"
-	StatusDone     orderStatus = "done"
-	StatusCanceled orderStatus = "canceled"
+	StatusCreated  OrderStatus = "created"
+	StatusDone     OrderStatus = "done"
+	StatusCanceled OrderStatus = "canceled"
 )
 
 type Order struct {
@@ -21,7 +21,7 @@ type Order struct {
 	createdAt   time.Time
 	updatedAt   time.Time
 	tickets     []*Ticket
-	orderStatus orderStatus
+	orderStatus OrderStatus
 	totalPrice  float32
 }
 
@@ -55,7 +55,7 @@ func (o *Order) UserID() int {
 	return o.userID
 }
 
-func (o *Order) OrderStatus() orderStatus {
+func (o *Order) OrderStatus() OrderStatus {
 	return o.orderStatus
 }
 
@@ -81,7 +81,7 @@ func NewOrderWithDetails(
 	id uuid.UUID,
 	userID int,
 	tickets []*Ticket,
-	status orderStatus,
+	status string,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) (*Order, error) {
@@ -98,7 +98,7 @@ func NewOrderWithDetails(
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
 		tickets:     tickets,
-		orderStatus: status,
+		orderStatus: OrderStatus(status),
 		totalPrice:  CalculateTotalPrice(tickets),
 	}, nil
 }
