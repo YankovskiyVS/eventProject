@@ -77,7 +77,7 @@ func (o *Order) AddTicket(t *Ticket) error {
 }
 
 // Setter method:
-func NewOrderWithDetails(
+func SetOrderWithDetails(
 	id uuid.UUID,
 	userID int,
 	tickets []*Ticket,

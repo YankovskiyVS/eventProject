@@ -144,7 +144,7 @@ func (r *OrderRepository) convertToDomainOrder(pg OrderPostgres, tickets []*enti
 		return nil, fmt.Errorf("invalid order UUID: %w", err)
 	}
 
-	return entities.NewOrderWithDetails(
+	return entities.SetOrderWithDetails(
 		id,
 		int(pg.UserID),
 		tickets,
@@ -160,7 +160,7 @@ func (r *OrderRepository) convertToDomainTicket(pg TicketPostgres) (*entities.Ti
 		return nil, fmt.Errorf("invalid ticket UUID: %w", err)
 	}
 
-	return entities.NewTicketWithDetails(
+	return entities.SetTicketWithDetails(
 		id,
 		float32(pg.Price),
 		int(pg.EventID),

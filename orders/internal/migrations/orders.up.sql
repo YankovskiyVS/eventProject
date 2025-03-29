@@ -1,0 +1,7 @@
+		CREATE TABLE IF NOT EXISTS orders (
+			id SERIAL PRIMARY KEY,
+			uuid VARCHAR(36) UNIQUE NOT NULL,
+			order_status VARCHAR(20) NOT NULL,
+			user_id INTEGER NOT NULL,
+			created_at TIMESTAMP NOT NULL,
+			updated_at TIMESTAMP NOT NULL

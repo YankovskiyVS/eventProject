@@ -41,7 +41,7 @@ func (t *Ticket) EventID() int {
 }
 
 // Setter method:
-func NewTicketWithDetails(id uuid.UUID, price float32, eventID int) *Ticket {
+func SetTicketWithDetails(id uuid.UUID, price float32, eventID int) *Ticket {
 	return &Ticket{
 		id:      id,
 		price:   price,

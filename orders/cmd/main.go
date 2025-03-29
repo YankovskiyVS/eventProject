@@ -33,13 +33,4 @@ func main() {
 	}
 	defer ticketDB.Close()
 
-	// Initialize tables
-	if err := postgres.InitializeOrderDB(orderDB); err != nil {
-		log.Fatalf("Failed to initialize order DB: %v", err)
-	}
-
-	if err := postgres.InitializeTicketDB(ticketDB); err != nil {
-		log.Fatalf("Failed to initialize ticket DB: %v", err)
-	}
-
 }
